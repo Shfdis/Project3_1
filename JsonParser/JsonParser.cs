@@ -1,29 +1,140 @@
 namespace JsonParser;
-
+//AI_COMMENTS
+/// <summary>
+/// A static class for parsing and writing json
+/// </summary>
 public static class JsonParser
 {
+    /// <summary>
+    /// Writes the json to the file
+    /// </summary>
+    /// <param name="obj">The IJSONObject to write to the file</param>
+    /// <param name="path">The path of the file to write to</param>
     public static void WriteJson(IJSONObject obj, string path)
     {
-        StreamWriter sw = new StreamWriter(path);
-        sw.WriteLine(obj);
-        sw.Flush();
-        sw.Close();
+        TextWriter originalOutput = Console.Out;
+        try
+        {
+            using (StreamWriter writer = new StreamWriter(path))
+            {
+                Console.SetOut(writer);
+                Console.WriteLine(obj.HumanReadable());
+            }
+        }
+        catch (Exception)
+        {
+            Console.SetOut(originalOutput);
+            throw;
+        }
+        finally
+        {
+            Console.SetOut(originalOutput);
+        }
     }
+
+    /// <summary>
+    /// Checks if the character is an escape sequence
+    /// </summary>
+    /// <param name="c">The character to check</param>
+    /// <returns>True if the character is an escape sequence, false otherwise</returns>
+    private static bool IsEscapeSequence(char c)
+    {
+        return c switch
+        {
+            '\\' => true,
+            '"' => true,
+            '\'' => true,
+            '0' => true,
+            'a' => true,
+            'b' => true,
+            't' => true,
+            'n' => true,
+            'r' => true,
+            'f' => true,
+            'e' => true,
+            'v' => true,
+            'u' => true,
+            'U' => true,
+            'x' => true,
+            _ => false
+        };
+    }
+    /// <summary>
+    /// Skips the string symbol
+    /// </summary>
+    /// <param name="s">The string to skip the string symbol from</param>
+    /// <param name="position">The position to skip the string symbol from</param>
+    /// <returns>The string symbol skipped</returns>
+    private static string SkipStringSymbol(string s, ref int position)
+    {
+        if (s[position] == '\\')
+        {
+            string ans = "\\";
+            position++;
+            if (position >= s.Length)
+            {
+                throw new FormatException("Неверный формат json");
+            }
+
+            if (!IsEscapeSequence(s[position]))
+            {
+                throw new FormatException("Неверный формат json");
+            }
+            ans += s[position];
+            position++;
+            return ans;
+        } else {
+            position++;
+            return s[position - 1].ToString();
+        }
+    }
+    /// <summary>
+    /// Normalizes the string(deletes all space symbols and new line symbols)
+    /// </summary>
+    /// <param name="s">The string to normalize</param>
+    /// <returns>The normalized string</returns>
     public static string Normalise(string s)
     {
         string answer = "";
-        foreach (char c in s)
+        bool is_string = false;
+        for (int i = 0; i < s.Length;)
         {
-            answer += c switch
+            char c = s[i];
+            if (!is_string)
             {
-                ' ' => "",
-                '\n' => "",
-                _ => c.ToString()
-            };
+                answer += c switch
+                {
+                    ' ' => "",
+                    '\n' => "",
+                    '\r' => "",
+                    '\t' => "",
+                    _ => c.ToString()
+                };
+                if (c == '"')
+                {
+                    is_string = true;
+                }
+
+                i++;
+            }
+            else
+            {
+                answer += SkipStringSymbol(s, ref i);
+                if (c == '"')
+                {
+                    is_string = !is_string;
+                }
+            }
         }
         return answer;
     }
 
+    /// <summary>
+    /// Gets the state of the json
+    /// </summary>
+    /// <param name="s">The string to get the state of</param>
+    /// <param name="i">The position to get the state of</param>
+    /// <returns>The state of the json</returns>
     private static JsonStates GetState(string s, int i)
     {
         return s[i] switch
@@ -37,29 +148,32 @@ public static class JsonParser
             _ => JsonStates.Number
         };
     }
+    
 
-    private static bool CheckNull(string s, int i)
-    {
-        if (i + 4 <= s.Length)
-        {
-            return s[i..(i + 4)] == "null";
-        }
-
-        return false;
-    }
-
-    public static IJSON Parse(string? s, bool normalized = false, int index = 0)
+    /// <summary>
+    /// Parses the json
+    /// </summary>
+    /// <param name="s">The json to parse</param>
+    /// <param name="norm">Whether to normalize the json</param>
+    /// <param name="index">The position to start parsing from</param>
+    /// <returns>The parsed json</returns>
+    public static IJSON Parse(string? s, bool norm = false, int index = 0)
     {
         if (s is null)
         {
             throw new ArgumentNullException(nameof(s));
         }
+
+        if (!norm)
+        {
+            s = Normalise(s);
+        }
         switch (GetState(s, index))
         {
             case JsonStates.Object:
-                return new Object(s, normalized, index);
+                return new Object(s, index);
             case JsonStates.Array:
-                return new Array(s, normalized, index);
+                return new Array(s, index);
             case JsonStates.String:
                 return new StringJ(s, index);
             case JsonStates.Boolean:
@@ -67,18 +181,43 @@ public static class JsonParser
             case JsonStates.Number:
                 return new NumberJ(s, index);
             default:
-                return CheckNull(s, index) ? null : throw new InvalidDataException("Invalid JSON format.");
+                return new NullJ(s, index);
         }
     }
+    /// <summary>
+    /// Reads the json from the file
+    /// </summary>
+    /// <param name="path">The path of the file to read from</param>
+    /// <returns>The parsed json</returns>
     public static IJSONObject ReadJson(string path)
     {
-        Stream input = new FileStream(path, FileMode.Open);
-        string json = new StreamReader(input).ReadToEnd();
-        IJSON obj = Parse(json);
-        if (obj is not IJSONObject jsonObject)
+        var standardInput = new StreamReader(Console.OpenStandardInput());
+        IJSONObject obj;
+        try
         {
-            throw new FormatException("Not an object");
+            StreamReader input = new StreamReader(path);
+            Console.SetIn(input);
+            string json = Console.In.ReadToEnd();
+            obj = Parse(json) as IJSONObject;
+            input.Dispose();
         }
-        return jsonObject;
+        catch (FormatException)
+        {
+            Console.SetIn(standardInput);
+            throw new FormatException("Неверный формат json");
+        }
+        catch (InvalidCastException)
+        {
+            Console.SetIn(standardInput);
+            throw new FormatException("Неверный формат json");
+        }
+        catch (Exception)
+        {
+            
+            Console.SetIn(standardInput);
+            throw new Exception("Невозможно прочитать из файла по этому пути");
+        }
+        Console.SetIn(standardInput);
+        return obj;
     }
 }

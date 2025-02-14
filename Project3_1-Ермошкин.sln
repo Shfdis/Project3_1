@@ -4,6 +4,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Project3_1", "Project3_1\Pr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonParser", "JsonParser\JsonParser.csproj", "{DAA3E634-49A4-4B82-AC6F-8F9C683764F9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisitorHandler", "VisitorHandler\VisitorHandler.csproj", "{F30E81ED-7AF6-46C3-AF37-E2B47C04F821}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Graphics", "Graphics\Graphics.csproj", "{DC709F65-817F-4173-9FBB-5C42FE116FF5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +22,13 @@ Global
 		{DAA3E634-49A4-4B82-AC6F-8F9C683764F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DAA3E634-49A4-4B82-AC6F-8F9C683764F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DAA3E634-49A4-4B82-AC6F-8F9C683764F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F30E81ED-7AF6-46C3-AF37-E2B47C04F821}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F30E81ED-7AF6-46C3-AF37-E2B47C04F821}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F30E81ED-7AF6-46C3-AF37-E2B47C04F821}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F30E81ED-7AF6-46C3-AF37-E2B47C04F821}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC709F65-817F-4173-9FBB-5C42FE116FF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC709F65-817F-4173-9FBB-5C42FE116FF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC709F65-817F-4173-9FBB-5C42FE116FF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC709F65-817F-4173-9FBB-5C42FE116FF5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

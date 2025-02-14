@@ -8,7 +8,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Graphics\Graphics.csproj" />
       <ProjectReference Include="..\JsonParser\JsonParser.csproj" />
+      <ProjectReference Include="..\VisitorHandler\VisitorHandler.csproj" />
     </ItemGroup>
 
 </Project>
